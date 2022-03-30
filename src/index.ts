@@ -1,15 +1,6 @@
 // Dependecies
-import express from 'express';
-import db from './app/db';
+import app from "./app";
+import './database';
 
-db.run();
-
-const app = express();
-const PORT = 8080;
-app.get('/', (req, res) => {
-  res.send('Hello World! 2');
-});
-
-app.listen(PORT, () => {
-  console.log(`server running on port ${PORT}`);
-});
+app.listen(app.get('port'));
+console.log(`Server on port`, app.get('port'));
