@@ -1,0 +1,42 @@
+version: '3.7'
+
+services:
+  mongo:
+    image: mongo:5.0.6-focal
+    container_name: db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=$MONGO_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASSWORD
+    ports:
+      - '27017:27017'
+    volumes:     
+      - dbdata:/data/db
+  ts-node-docker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    image: nodejs
+    container_name: nodejs_57blocks_music
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MONGO_USERNAME=$MONGO_USERNAME
+      - MONGO_PASSWORD=$MONGO_PASSWORD
+      - MONGO_HOSTNAME=mongo
+      - MONGO_PORT=$MONGO_PORT
+      - MONGO_DB=$MONGO_DB
+    volumes:
+      - ./src:/home/node/app/src
+      - ./nodemon.json:/home/node/app/nodemon.json
+    expose:
+      - '80'
+    ports:
+      - '80:8080'
+    command: npm run dev
+    depends_on:
+      - mongo
+volumes:
+  dbdata:
