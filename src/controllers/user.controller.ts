@@ -5,12 +5,14 @@ import sanitize from 'mongo-sanitize';
 import jwt from 'jsonwebtoken';
 import config from "../config/config";
 
+// Function to create the JWT token according to the user data
 function createToken (user: IUser) {
   return jwt.sign({id: user._id, email: user.email}, config.jwtSecret, {
     expiresIn: 86400
   });
 }
 
+// Function to register a user with the password and email
 export const signUp = async (req: Request, res: Response): Promise<Response> => {
   if (!req.body.email || !req.body.password) {
     return res.status(400).json({msg: 'Please. Send you information to register'});
@@ -33,6 +35,7 @@ export const signUp = async (req: Request, res: Response): Promise<Response> => 
   return res.status(201).json(newUser);
 };
 
+// Function to log in to a user with the email and password
 export const signIn = async (req: Request, res: Response) => {
   if (!req.body.email || !req.body.password) {
     return res.status(400).json({msg: 'Please. Send you information to register'});

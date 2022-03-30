@@ -1,2 +1,9 @@
 # 57_blocks_music
-This is a repo for a testing for 57 blocks interview
+
+## Installation and Setup
+
+To install the project, you must run the next command:
+
+`docker-compose up`
+
+

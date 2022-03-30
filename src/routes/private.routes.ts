@@ -4,6 +4,7 @@ import {IUser} from "../models/user";
 
 const router = Router();
 
+// Example private route
 router.get('/music', passport.authenticate('jwt', {session: false}), (req, res) => {
   const user: IUser = <IUser>req.user;
 
