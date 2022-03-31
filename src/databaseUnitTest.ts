@@ -8,7 +8,6 @@ let mongod : MongoMemoryServer | null = null;
 const startConnection = async () => {
   mongod = await MongoMemoryServer.create();
   const uri = mongod.getUri();
-  console.log(`This is the URI: ${uri}`);
   mongoose.connect(uri);
 };
 
@@ -16,7 +15,6 @@ const closeDatabase = async () => {
   await mongoose.connection.dropDatabase();
   await mongoose.connection.close();
   await mongod?.stop();
-  console.log('Database connection was closed');
 };
 
 const clearDatabase = async () => {
@@ -28,13 +26,8 @@ const clearDatabase = async () => {
   }
 };
 
-// Check if the connection was succeeded
-mongoose.connection.once('open', async () => {
-  console.log('Mongodb connection stablished');
-});
-
 // Check if the connection was failed
-mongoose.connection.on('error', err => {
+mongoose.connection.on('error', (err:any) => {
   console.log(err);
   process.exit(0);
 });
