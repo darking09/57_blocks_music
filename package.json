@@ -10,9 +10,10 @@
     "build": "tsc -p .",
     "dev": "nodemon src/index.ts",
     "lint": "eslint . --ext .ts",
-    "test": "jest"
+    "test": "jest --testEnvironment=node --runInBand ./src"
   },
   "devDependencies": {
+    "@babel/plugin-transform-regenerator": "^7.16.7",
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-typescript": "^7.16.7",
     "@types/bcrypt": "^5.0.0",
@@ -41,6 +42,7 @@
     "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
     "mongo-sanitize": "^1.1.0",
+    "mongodb-memory-server": "^8.4.2",
     "mongoose": "^6.2.9",
     "morgan": "^1.10.0",
     "passport": "^0.5.2",

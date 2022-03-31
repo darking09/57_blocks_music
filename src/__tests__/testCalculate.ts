@@ -1,8 +1,21 @@
-import sum from '../testCalculate';
+// Dependecies
+import db from '../test/databaseUnitTest';
+import User, {IUser} from '../models/user';
+
+beforeAll(async () => await db.startConnection());
+
+afterEach(async () => await db.clearDatabase());
+
+afterAll(async () => await db.closeDatabase());
+
+describe('user', () => {
+  it('first', async () => {
+    expect(async () => await User.create(userComplete));
+  });
+});
 
 
-describe('Sum', () => {
-  it('2 + 2 = 4', ()=> {
-    expect(sum(2,2)).toEqual(4)
-  })
-})
+const userComplete = {
+  email: 'f@f.com',
+  password: 'password'
+};

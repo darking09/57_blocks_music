@@ -31,6 +31,8 @@ services:
     volumes:
       - ./src:/home/node/app/src
       - ./nodemon.json:/home/node/app/nodemon.json
+      - ./.babelrc:/home/node/app/.babelrc
+      - ./tsconfig.json:/home/node/app/tsconfig.json
     expose:
       - '80'
     ports:
