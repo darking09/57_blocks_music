@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt';
 export interface IUser extends Document {
   email: string;
   password: string;
+  isPublic?: boolean;
   comparePassword: (p:string) => Promise<boolean>
 }
 
@@ -15,13 +16,38 @@ const userSchema = new Schema({
     type: String,
     unique: true,
     required: true,
+    index: true,
     lowercase: true,
     trim: true
+  },
+  isPublic: {
+    type: Boolean,
+    default: false,
   },
   password: {
     type: String,
     required: true
-  }
+  },
+  songs: [
+    {
+      title: {
+        type: String,
+        required: true
+      },
+      duration: {
+        type: String,
+        required: true
+      },
+      album: {
+        type: String,
+        required: true
+      },
+      author: {
+        type: String,
+        required: true
+      }
+    }
+  ]
 });
 
 // Encrypt method for user's password

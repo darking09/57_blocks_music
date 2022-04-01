@@ -2,8 +2,8 @@
 import * as utils from '../../utils';
 import User from '../../models/user';
 import db from '../../databaseUnitTest';
-import * as userController from '../user.controller';
 import { Request, Response } from 'express';
+import * as userController from '../user.controller';
 
 beforeAll(async () => await db.startConnection());
 
