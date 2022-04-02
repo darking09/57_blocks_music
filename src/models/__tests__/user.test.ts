@@ -21,14 +21,14 @@ describe('User Model', () => {
 
   it('Should check the user\'s password after this was saved as true if I compare it with the same password', async () => {
     await User.create(userComplete);
-    const user : IUser | null = await User.findOne({email: userComplete.email});
+    const user : IUser | null = await User.findOne({email: userComplete.email}).select('password');
     const checkedPassword = await user!.comparePassword(userComplete.password);
     expect(checkedPassword).toEqual(true);
   });
 
   it('Should check the user\'s password after this was saved as false if I compare it with another password', async () => {
     await User.create(userComplete);
-    const user : IUser | null = await User.findOne({email: userComplete.email});
+    const user : IUser | null = await User.findOne({email: userComplete.email}).select('password');
     const checkedPassword = await user!.comparePassword('otherPassword');
 
     expect(checkedPassword).toEqual(false);
