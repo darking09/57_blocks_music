@@ -8,22 +8,48 @@ import {IUser, ISong} from "../models/types";
 export const PUBLIC_USER = 'user@public.com';
 
 export const index = async (req: Request, res: Response): Promise<Response> => {
-  const user: IUser = <IUser>req.user;
-  return res.status(200).json({msg: 'index', songs: [{}]});
+  const {user, type} = await utils.auth.chooseUserByTipe(req, PUBLIC_USER);
+
+  const maxSizeSongList = await User.aggregate([
+    {
+      $match:{
+        _id: user._id
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        total_songs: {$size: ["$songs"]}
+      }
+    }
+  ]);
+
+
+  const { endPagination, startPagination } = utils.pagination.getStartAndEndPagination(req, maxSizeSongList[0].total_songs);
+
+  const filtredSongs = await User.find({
+    _id: user._id
+  }, {
+    _id: 0,
+    email: 0,
+    isPublic: 0,
+    songs: {
+      $slice: [startPagination, endPagination]
+    }
+  });
+
+  const pagination = utils.pagination.paginationData(startPagination, endPagination, req, maxSizeSongList[0].total_songs);
+
+  return res.status(200).json({
+    listType: type,
+    songs: filtredSongs[0].songs,
+    pagination
+  });
 };
 
 export const create = async(req: Request, res: Response): Promise<Response> => {
-  let user: IUser;
-  let type: string;
 
-  if (req.body.isPrivate) {
-    const userAuth : IUser = <IUser>req.user;
-    user = <IUser>await User.findOne({ email: userAuth.email });
-    type = 'private';
-  } else {
-    user = <IUser> await User.findOne({ email: PUBLIC_USER });
-    type = 'public';
-  }
+  const {user, type} = await utils.auth.chooseUserByTipe(req, PUBLIC_USER);
 
   const newSong : ISong = <ISong>{
     title: sanitize(req.body.title),
@@ -33,8 +59,7 @@ export const create = async(req: Request, res: Response): Promise<Response> => {
   };
 
   if (await user.isUniqueSong(newSong)) {
-    User.updateOne({_id: user._id}, {$push: {songs: newSong}});
-
+    await User.updateOne({_id: user._id}, {$push: {songs: newSong}});
     return res.status(200).json({msg: utils.meesages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', type), song: newSong});
   }
 
@@ -42,8 +67,9 @@ export const create = async(req: Request, res: Response): Promise<Response> => {
 };
 
 export const update = async(req: Request, res: Response): Promise<Response> => {
-  const user: IUser = <IUser>req.user;
-  return res.json({msg: 'update', user});
+  const {user, type} = await utils.auth.chooseUserByTipe(req, PUBLIC_USER);
+
+  return res.status(200).json({msg: 'update', user});
 };
 
 // TODO: these methods might be implemented for future developments

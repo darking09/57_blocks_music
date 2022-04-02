@@ -1,5 +1,5 @@
 // Song interface
-interface ISong extends Document {
+interface ISong {
   title: string;
   duration: string;
   album: string;

@@ -7,7 +7,8 @@ module.exports = {
       {
         email: 'user@public.com',
         password: 'Passwords@',
-        isPublic: true
+        isPublic: true,
+        songs: []
       }
     );
   },

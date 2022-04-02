@@ -44,8 +44,20 @@ describe('Song Controller', () => {
   describe('List user\'s songs', () => {
     it('Should return a songs list with the user\'s songs number', async () => {
       mockRequest = {
-        user
-      }
+        user,
+        query: {
+          page: 1
+        },
+        params: {
+          type: 'private'
+        },
+        protocol: 'http',
+        hostname: 'test.com',
+        baseUrl: '/list'
+      };
+
+      const url = `http://test.com/list/private?page=2`
+      await addManySongsToAUser(mongoPrivateUser, 10);
 
       await songController.index(mockRequest as Request, mockResponse as Response);
       const status : any = mockResponse.status;
@@ -53,13 +65,28 @@ describe('Song Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
-      expect(json.mock.lastCall[0].songs.length).toEqual(1);
+      expect(json.mock.lastCall[0].songs.length).toEqual(10);
+      expect(json.mock.lastCall[0].listType).toEqual('private');
+      expect(json.mock.lastCall[0].pagination.next_page).toEqual(2);
+      expect(json.mock.lastCall[0].pagination.next_url).toEqual(url);
     })
 
     it('Should return a songs list with the public songs number', async () => {
       mockRequest = {
-        user
+        user,
+        query: {
+          page: 1
+        },
+        params: {
+          type: 'public'
+        },
+        protocol: 'http',
+        hostname: 'test.com',
+        baseUrl: '/list'
       }
+
+      const url = `http://test.com/list/public?page=2`
+      await addManySongsToAUser(mongoPublicUser, 10);
 
       await songController.index(mockRequest as Request, mockResponse as Response);
       const status : any = mockResponse.status;
@@ -67,27 +94,54 @@ describe('Song Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
-      expect(json.mock.lastCall[0].songs.length).toEqual(1);
+      expect(json.mock.lastCall[0].songs.length).toEqual(10);
+      expect(json.mock.lastCall[0].listType).toEqual('public');
+      expect(json.mock.lastCall[0].pagination.next_page).toEqual(2);
+      expect(json.mock.lastCall[0].pagination.next_url).toEqual(url);
     })
 
-    it('Should return a next page because it is different to the last page', async () => {
+    it('Should return empty pagination object because it is the last page', async () => {
       mockRequest = {
-        user
+        user,
+        query: {
+          page: 2
+        },
+        params: {
+          type: 'public'
+        },
+        protocol: 'http',
+        hostname: 'test.com',
+        baseUrl: '/list'
       }
+
+      await addManySongsToAUser(mongoPublicUser, 10);
 
       await songController.index(mockRequest as Request, mockResponse as Response);
       const status : any = mockResponse.status;
-      const json : any = mockResponse.json
+      const json : any = mockResponse.json;
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
-      expect(json.mock.lastCall[0].songs.length).toEqual(1);
+      expect(json.mock.lastCall[0].songs.length).toEqual(10);
+      expect(json.mock.lastCall[0].pagination.next_page).toEqual(undefined);
+      expect(json.mock.lastCall[0].pagination.next_url).toEqual(undefined);
     })
 
-    it('Should return an empty next page because it is the last page', async () => {
+    it('Should return an empty list because there isn\'t more items', async () => {
       mockRequest = {
-        user
+        user,
+        query: {
+          page: 2
+        },
+        params: {
+          type: 'public'
+        },
+        protocol: 'http',
+        hostname: 'test.com',
+        baseUrl: '/list'
       }
+
+      await addManySongsToAUser(mongoPublicUser, 5);
 
       await songController.index(mockRequest as Request, mockResponse as Response);
       const status : any = mockResponse.status;
@@ -95,7 +149,9 @@ describe('Song Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
-      expect(json.mock.lastCall[0].songs.length).toEqual(1);
+      expect(json.mock.lastCall[0].songs.length).toEqual(0);
+      expect(json.mock.lastCall[0].pagination.next_page).toEqual(undefined);
+      expect(json.mock.lastCall[0].pagination.next_url).toEqual(undefined);
     })
   })
 
@@ -109,16 +165,21 @@ describe('Song Controller', () => {
           album: 'Appetite for Destruction',
           duration: '5:56',
           author: 'Guns N\' Roses'
+        },
+        params: {
+
         }
       }
 
       await songController.create(mockRequest as Request, mockResponse as Response);
       const status : any = mockResponse.status;
       const json : any = mockResponse.json;
+      const userAfterInsert: types.IUser = <types.IUser> await User.findOne({email: mongoPrivateUser.email});
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
       expect(json.mock.lastCall[0].msg).toEqual(utils.meesages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'private'));
+      expect(userAfterInsert.songs?.length).toEqual(1);
     })
 
     it('Should register a new song for the music public catalog', async () => {
@@ -130,16 +191,21 @@ describe('Song Controller', () => {
           album: 'Appetite for Destruction',
           duration: '5:56',
           author: 'Guns N\' Roses'
+        },
+        params: {
+
         }
       }
 
       await songController.create(mockRequest as Request, mockResponse as Response);
       const status : any = mockResponse.status;
       const json : any = mockResponse.json;
+      const userAfterInsert: types.IUser = <types.IUser> await User.findOne({email: mongoPublicUser.email});
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
       expect(json.mock.lastCall[0].msg).toEqual(utils.meesages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'public'));
+      expect(userAfterInsert.songs?.length).toEqual(1);
     })
 
     it('Shouldn\'t register a new song for the user\'s music catalog if this was registered previously', async () => {
@@ -157,18 +223,23 @@ describe('Song Controller', () => {
         body: {
           ...song,
           isPrivate: true
+        },
+        params: {
+
         }
       }
 
       await songController.create(mockRequest as Request, mockResponse as Response);
       const status : any = mockResponse.status;
       const json : any = mockResponse.json;
+      const userAfterInsert: types.IUser = <types.IUser> await User.findOne({email: mongoPrivateUser.email});
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(422);
       const msg = utils.meesages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'private').replace('SONG_NAME', song.title);
 
       expect(json.mock.lastCall[0].msg).toEqual(msg);
+      expect(userAfterInsert.songs?.length).toEqual(1);
     })
 
     it('Shouldn\'t register a new song for the music public catalog if this was registered previously', async () => {
@@ -186,18 +257,23 @@ describe('Song Controller', () => {
         body: {
           ...song,
           isPrivate: false
+        },
+        params: {
+
         }
       }
 
       await songController.create(mockRequest as Request, mockResponse as Response);
       const status : any = mockResponse.status;
       const json : any = mockResponse.json
+      const userAfterInsert: types.IUser = <types.IUser> await User.findOne({email: mongoPublicUser.email});
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(422);
       const msg = utils.meesages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'public').replace('SONG_NAME', song.title);
 
       expect(json.mock.lastCall[0].msg).toEqual(msg);
+      expect(userAfterInsert.songs?.length).toEqual(1);
     })
   })
 
@@ -207,13 +283,12 @@ describe('Song Controller', () => {
         user
       }
 
-      await songController.index(mockRequest as Request, mockResponse as Response);
+      await songController.update(mockRequest as Request, mockResponse as Response);
       const status : any = mockResponse.status;
       const json : any = mockResponse.json
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
-      expect(json.mock.lastCall[0].songs.length).toEqual(1);
     })
 
     it('Shouldn\'t update a song for the music public catalog', async () => {
@@ -221,13 +296,12 @@ describe('Song Controller', () => {
         user
       }
 
-      await songController.index(mockRequest as Request, mockResponse as Response);
+      await songController.update(mockRequest as Request, mockResponse as Response);
       const status : any = mockResponse.status;
       const json : any = mockResponse.json
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
-      expect(json.mock.lastCall[0].songs.length).toEqual(1);
     })
 
     it('Shouldn\'t update a song if this belongs to abithe user', async () => {
@@ -235,13 +309,12 @@ describe('Song Controller', () => {
         user
       }
 
-      await songController.index(mockRequest as Request, mockResponse as Response);
+      await songController.update(mockRequest as Request, mockResponse as Response);
       const status : any = mockResponse.status;
       const json : any = mockResponse.json
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
-      expect(json.mock.lastCall[0].songs.length).toEqual(1);
     })
   })
 });
@@ -253,4 +326,28 @@ const addUser = async () => {
 
 const addSong = async (user: types.IUser, song: types.ISong) => {
   await User.updateOne({_id: user._id}, {$push: {songs: song}});
+}
+
+const addManySongsToAUser = async (user: types.IUser, songsNumber: number) => {
+  const songs = makeManySongs(songsNumber);
+
+  const promiseSongs = songs.map((song) => addSong(user, song));
+
+  Promise.all(promiseSongs);
+}
+
+const makeManySongs = (songsNumber: number) : Array<types.ISong>=> {
+  const songs = []
+  for(let i = 0; i < songsNumber; i++) {
+    const baseSong:  types.ISong = {
+      title: `title ${i}`,
+      album: `album ${i}`,
+      duration: `duration ${i}`,
+      author: `author ${i}`
+    };
+
+    songs.push(baseSong);
+  }
+
+  return songs;
 }
