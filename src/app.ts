@@ -27,7 +27,7 @@ passport.use(passportMiddleware);
 app.get('/', (req, res) => {
   res.send('Hello World! 2');
 });
-app.use(authRoutes);
-app.use(privateRoutes);
+app.use('/auth', authRoutes);
+privateRoutes(app);
 
 export default app;

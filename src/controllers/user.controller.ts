@@ -55,7 +55,7 @@ export const signIn = async (req: Request, res: Response) => {
     password : <string> sanitize(req.body.password)
   };
 
-  const checkedUser = await User.findOne({email: sanitizedUser.email});
+  const checkedUser = await User.findOne({email: sanitizedUser.email}).select('password');
 
   if (checkedUser) {
     const isMatch = await checkedUser.comparePassword(sanitizedUser.password);

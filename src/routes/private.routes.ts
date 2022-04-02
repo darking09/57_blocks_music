@@ -1,14 +1,20 @@
-import { Router } from "express";
-import passport from "passport";
-import { index, create, read, update, destroy } from "../controllers/song.controller";
+/* eslint-disable @typescript-eslint/no-var-requires */
+// Dependecies
+import fs from 'fs';
+import path from 'path';
+import * as express from "express";
+import pluralize from "pluralize";
 
-const router = Router();
+const API_PATH = path.join(__dirname, '../api');
 
-// Example private route
-router.get('/music', passport.authenticate('jwt', {session: false}), index);
-router.post('/music', passport.authenticate('jwt', {session: false}), create);
-router.get('/music/:song_id', passport.authenticate('jwt', {session: false}), read);
-router.put('/music', passport.authenticate('jwt', {session: false}), update);
-router.delete('/music/:song_id', passport.authenticate('jwt', {session: false}), destroy);
+const test = (app: express.Application) => {
+  fs.readdirSync(API_PATH).forEach((api) => {
+    const plural = pluralize(api.replace('.ts', ''));
 
-export default router;
+    if (plural.indexOf('.') === -1 && plural !== '__tests__') {
+      app.use(`/api/${plural}`, require(`${API_PATH}/${api}`));
+    }
+  });
+};
+
+export default test;
