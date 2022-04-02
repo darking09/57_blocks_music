@@ -1,14 +1,9 @@
 // Dependencies
-import {model, Schema, Document} from 'mongoose';
+import mongoose, {model, Schema} from 'mongoose';
 import bcrypt from 'bcrypt';
 
 // User interface
-export interface IUser extends Document {
-  email: string;
-  password: string;
-  isPublic?: boolean;
-  comparePassword: (p:string) => Promise<boolean>
-}
+import {IUser, ISong} from './types';
 
 // User Schema
 const userSchema = new Schema({
@@ -66,6 +61,29 @@ userSchema.pre<IUser>('save', async function(next) {
 // Decrypt method for user's password
 userSchema.methods.comparePassword = async function(password:string): Promise<boolean> {
   return await bcrypt.compare(password, this.password);
+};
+
+userSchema.methods.isUniqueSong = async function(song:ISong): Promise<boolean> {
+  return !await model('user').findOne({
+    songs:
+    {
+      $elemMatch:
+      {
+        title:
+        {
+          $eq: song.title
+        },
+        album:
+        {
+          $eq: song.album
+        },
+        author:
+        {
+          $eq: song.author
+        },
+      }
+    }
+  });
 };
 
 export default model<IUser>('user', userSchema);

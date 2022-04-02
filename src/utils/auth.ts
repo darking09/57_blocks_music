@@ -1,6 +1,6 @@
 //Dependecies
 import config from "../config/config";
-import {IUser} from "../models/user";
+import {IUser} from "../models/types";
 import jwt from "jsonwebtoken";
 
 // Function to create the JWT token according to the user data
