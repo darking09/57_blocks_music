@@ -25,7 +25,7 @@ passport.use(passportMiddleware);
 
 // Routes
 app.get('/', (req, res) => {
-  res.send('Hello World! 2');
+  res.send('57 Blocks Music Service');
 });
 app.use('/auth', authRoutes);
 privateRoutes(app);
