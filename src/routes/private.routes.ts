@@ -9,7 +9,7 @@ const API_PATH = path.join(__dirname, '../api');
 
 const test = (app: express.Application) => {
   fs.readdirSync(API_PATH).forEach((api) => {
-    const plural = pluralize(api.replace('.ts', ''));
+    const plural = pluralize(api.replace('.ts', '').replace('.js', ''));
 
     if (plural.indexOf('.') === -1 && plural !== '__tests__') {
       app.use(`/api/${plural}`, require(`${API_PATH}/${api}`));
