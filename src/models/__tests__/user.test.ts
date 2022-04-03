@@ -1,6 +1,7 @@
 // Dependecies
 import db from '../../databaseUnitTest';
-import User, {IUser} from '../user';
+import {IUser} from '../types';
+import User from '../user';
 
 beforeAll(async () => await db.startConnection());
 
