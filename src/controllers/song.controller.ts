@@ -80,7 +80,7 @@ export const create = async(req: Request, res: Response): Promise<Response> => {
     }
 
     return res.status(422).json({
-      msg: utils.messages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', type).replace('SONG_NAME', req.body.title)
+      msg: utils.messages.MSG_SONG_REGISTER_DUPLICATED.replace('$TYPE', type).replace('$SONG_NAME', req.body.title)
     });
   } catch(err) {
     return res.status(500).json({msg: 'err'});
