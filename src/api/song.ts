@@ -1,7 +1,7 @@
 // Dependecies
 import { Router } from "express";
 import passport from "passport";
-import { index, create, read, update, destroy } from "../controllers/song.controller";
+import { index, create, update } from "../controllers/song.controller";
 
 const router = Router();
 const jwtOpts = {session: false};

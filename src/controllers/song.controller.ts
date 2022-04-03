@@ -156,7 +156,6 @@ export const update = async(req: Request, res: Response): Promise<Response> => {
       }
     });
   } catch(err) {
-    console.log(err)
     return res.status(500).json({
       msg: utils.messages.MSG_SERVER_ERROR_500
     });
