@@ -54,7 +54,7 @@ describe('User Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(400);
-      expect(json.mock.lastCall[0].msg).toEqual(utils.meesages.MSG_EMAIL_FORMAT);
+      expect(json.mock.lastCall[0].msg).toEqual(utils.messages.MSG_EMAIL_FORMAT);
     })
 
     it('Shouldn\'t sign up a user because the email and password weren\'t sent', async () => {
@@ -68,7 +68,7 @@ describe('User Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(400);
-      expect(json.mock.lastCall[0].msg).toEqual(utils.meesages.MSG_EMPTY_REQUEST);
+      expect(json.mock.lastCall[0].msg).toEqual(utils.messages.MSG_EMPTY_REQUEST);
     })
 
     it('Shouldn\'t sign up a user because it already was registered', async () => {
@@ -88,7 +88,7 @@ describe('User Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(400);
-      expect(json.mock.lastCall[0].msg).toEqual(utils.meesages.MSG_EMAIL_REGISTERED.replace('$EMAIL', body.email));
+      expect(json.mock.lastCall[0].msg).toEqual(utils.messages.MSG_EMAIL_REGISTERED.replace('$EMAIL', body.email));
     })
 
     it('Shouldn\'t sign up a user because its password doesn\'t fulfill the requirement', async () => {
@@ -108,7 +108,7 @@ describe('User Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(400);
-      expect(json.mock.lastCall[0].msg).toEqual(utils.meesages.MSG_PASSWORD_FORMAT);
+      expect(json.mock.lastCall[0].msg).toEqual(utils.messages.MSG_PASSWORD_FORMAT);
     })
   });
 
@@ -148,7 +148,7 @@ describe('User Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(400);
-      expect(json.mock.lastCall[0].msg).toEqual(utils.meesages.MSG_EMAIL_FORMAT);
+      expect(json.mock.lastCall[0].msg).toEqual(utils.messages.MSG_EMAIL_FORMAT);
     })
 
     it('Shouldn\'t sign in a user because it wasn\'t registered previously', async () => {
@@ -164,7 +164,7 @@ describe('User Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(400);
-      expect(json.mock.lastCall[0].msg).toEqual(utils.meesages.MSG_USER_NOT_FOUND);
+      expect(json.mock.lastCall[0].msg).toEqual(utils.messages.MSG_USER_NOT_FOUND);
     })
 
     it('Shouldn\'t sign in a user because it sent a wrong password', async () => {
@@ -187,7 +187,7 @@ describe('User Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(400);
-      expect(json.mock.lastCall[0].msg).toEqual(utils.meesages.MSG_USER_NOT_FOUND);
+      expect(json.mock.lastCall[0].msg).toEqual(utils.messages.MSG_USER_NOT_FOUND);
     })
 
     it('Shouldn\'t sign in a user because its password doesn\'t fulfill the requirement', async () => {
@@ -207,7 +207,7 @@ describe('User Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(400);
-      expect(json.mock.lastCall[0].msg).toEqual(utils.meesages.MSG_PASSWORD_FORMAT);
+      expect(json.mock.lastCall[0].msg).toEqual(utils.messages.MSG_PASSWORD_FORMAT);
     })
   })
 });

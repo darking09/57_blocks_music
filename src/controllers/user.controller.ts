@@ -7,63 +7,99 @@ import User from "../models/user";
 
 // Function to register a user with the password and email
 export const signUp = async (req: Request, res: Response): Promise<Response> => {
-  if (!req.body.email || !req.body.password) {
-    return res.status(400).json({msg: utils.meesages.MSG_EMPTY_REQUEST});
+  try {
+    if (!req.body.email || !req.body.password) {
+      return res.status(400).json({
+        msg: utils.messages.MSG_EMPTY_REQUEST
+      });
+    }
+
+    if (!utils.regularExpressions.validateEmail(req.body.email)) {
+      return res.status(400).json({
+        msg: utils.messages.MSG_EMAIL_FORMAT
+      });
+    }
+
+    if (!utils.regularExpressions.validatePassword(req.body.password)) {
+      return res.status(400).json({
+        msg:utils.messages.MSG_PASSWORD_FORMAT
+      });
+    }
+
+    const sanitizedUser = {
+      email: <string> sanitize(req.body.email),
+      password: <string> sanitize(req.body.password)
+    };
+
+    const checkedUser = await User.findOne({
+      email: sanitizedUser.email
+    });
+
+    if (checkedUser) {
+      return res.status(400).json({
+        msg: utils.messages.MSG_EMAIL_REGISTERED.replace('$EMAIL', req.body.email)
+      });
+    }
+
+    const newUser = new User(sanitizedUser);
+    await newUser.save();
+
+    return res.status(201).json({
+      token: utils.auth.createToken(newUser)
+    });
+  } catch(err) {
+    return res.status(500).json({
+      msg: utils.messages.MSG_SERVER_ERROR_500
+    });
   }
-
-  if (!utils.regularExpressions.validateEmail(req.body.email)) {
-    return res.status(400).json({msg: utils.meesages.MSG_EMAIL_FORMAT});
-  }
-
-  if (!utils.regularExpressions.validatePassword(req.body.password)) {
-    return res.status(400).json({msg:utils.meesages.MSG_PASSWORD_FORMAT});
-  }
-
-  const sanitizedUser = {
-    email: <string> sanitize(req.body.email),
-    password: <string> sanitize(req.body.password)
-  };
-
-  const checkedUser = await User.findOne({email: sanitizedUser.email});
-
-  if (checkedUser) {
-    return res.status(400).json({msg: utils.meesages.MSG_EMAIL_REGISTERED.replace('$EMAIL', req.body.email)});
-  }
-
-  const newUser = new User(sanitizedUser);
-  await newUser.save();
-
-  return res.status(201).json({token: utils.auth.createToken(newUser)});
 };
 
 // Function to log in to a user with the email and password
 export const signIn = async (req: Request, res: Response) => {
-  if (!req.body.email || !req.body.password) {
-    return res.status(400).json({msg: utils.meesages.MSG_EMPTY_REQUEST});
-  }
-
-  if (!utils.regularExpressions.validateEmail(req.body.email)) {
-    return res.status(400).json({msg: utils.meesages.MSG_EMAIL_FORMAT});
-  }
-
-  if (!utils.regularExpressions.validatePassword(req.body.password)) {
-    return res.status(400).json({msg: utils.meesages.MSG_PASSWORD_FORMAT});
-  }
-
-  const sanitizedUser = {
-    email: <string> sanitize(req.body.email),
-    password : <string> sanitize(req.body.password)
-  };
-
-  const checkedUser = await User.findOne({email: sanitizedUser.email}).select('password');
-
-  if (checkedUser) {
-    const isMatch = await checkedUser.comparePassword(sanitizedUser.password);
-
-    if (isMatch) {
-      return res.status(200).json({token: utils.auth.createToken(checkedUser)});
+  try {
+    if (!req.body.email || !req.body.password) {
+      return res.status(400).json({
+        msg: utils.messages.MSG_EMPTY_REQUEST
+      });
     }
-  }
 
-  return res.status(400).json({msg: utils.meesages.MSG_USER_NOT_FOUND});
+    if (!utils.regularExpressions.validateEmail(req.body.email)) {
+      return res.status(400).json({
+        msg: utils.messages.MSG_EMAIL_FORMAT
+      });
+    }
+
+    if (!utils.regularExpressions.validatePassword(req.body.password)) {
+      return res.status(400).json({
+        msg: utils.messages.MSG_PASSWORD_FORMAT
+      });
+    }
+
+    const sanitizedUser = {
+      email: <string> sanitize(req.body.email),
+      password : <string> sanitize(req.body.password)
+    };
+
+    const checkedUser = await User.findOne({
+      email: sanitizedUser.email
+    }).select('password');
+
+    if (checkedUser) {
+      const isMatch = await checkedUser.comparePassword(sanitizedUser.password);
+
+      if (isMatch) {
+        return res.status(200).json({
+          token: utils.auth.createToken(checkedUser)
+        });
+      }
+    }
+
+    return res.status(400).json({
+      msg: utils.messages.MSG_USER_NOT_FOUND
+    });
+  } catch (err) {
+    return res.status(500).json({
+      msg: utils.messages.MSG_SERVER_ERROR_500
+    });
+  }
 };

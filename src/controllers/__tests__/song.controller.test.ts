@@ -65,7 +65,7 @@ describe('Song Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
-      expect(json.mock.lastCall[0].songs.length).toEqual(10);
+      expect(json.mock.lastCall[0].songs.length).toEqual(5);
       expect(json.mock.lastCall[0].listType).toEqual('private');
       expect(json.mock.lastCall[0].pagination.next_page).toEqual(2);
       expect(json.mock.lastCall[0].pagination.next_url).toEqual(url);
@@ -94,7 +94,7 @@ describe('Song Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
-      expect(json.mock.lastCall[0].songs.length).toEqual(10);
+      expect(json.mock.lastCall[0].songs.length).toEqual(5);
       expect(json.mock.lastCall[0].listType).toEqual('public');
       expect(json.mock.lastCall[0].pagination.next_page).toEqual(2);
       expect(json.mock.lastCall[0].pagination.next_url).toEqual(url);
@@ -122,7 +122,7 @@ describe('Song Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
-      expect(json.mock.lastCall[0].songs.length).toEqual(10);
+      expect(json.mock.lastCall[0].songs.length).toEqual(5);
       expect(json.mock.lastCall[0].pagination.next_page).toEqual(undefined);
       expect(json.mock.lastCall[0].pagination.next_url).toEqual(undefined);
     })
@@ -161,7 +161,7 @@ describe('Song Controller', () => {
         user,
         body: {
           isPrivate: true,
-          title: 'Sweet Child O\' MINE',
+          title: 'Sweet Child O\' Mine',
           album: 'Appetite for Destruction',
           duration: '5:56',
           author: 'Guns N\' Roses'
@@ -178,7 +178,7 @@ describe('Song Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
-      expect(json.mock.lastCall[0].msg).toEqual(utils.meesages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'private'));
+      expect(json.mock.lastCall[0].msg).toEqual(utils.messages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'private'));
       expect(userAfterInsert.songs?.length).toEqual(1);
     })
 
@@ -187,7 +187,7 @@ describe('Song Controller', () => {
         user,
         body: {
           isPrivate: false,
-          title: 'Sweet Child O\' MINE',
+          title: 'Sweet Child O\' Mine',
           album: 'Appetite for Destruction',
           duration: '5:56',
           author: 'Guns N\' Roses'
@@ -204,13 +204,13 @@ describe('Song Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
-      expect(json.mock.lastCall[0].msg).toEqual(utils.meesages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'public'));
+      expect(json.mock.lastCall[0].msg).toEqual(utils.messages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'public'));
       expect(userAfterInsert.songs?.length).toEqual(1);
     })
 
     it('Shouldn\'t register a new song for the user\'s music catalog if this was registered previously', async () => {
       const song: types.ISong = <types.ISong>{
-        title: 'Sweet Child O\' MINE',
+        title: 'Sweet Child O\' Mine',
         album: 'Appetite for Destruction',
         duration: '5:56',
         author: 'Guns N\' Roses'
@@ -236,7 +236,7 @@ describe('Song Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(422);
-      const msg = utils.meesages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'private').replace('SONG_NAME', song.title);
+      const msg = utils.messages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'private').replace('SONG_NAME', song.title);
 
       expect(json.mock.lastCall[0].msg).toEqual(msg);
       expect(userAfterInsert.songs?.length).toEqual(1);
@@ -244,7 +244,7 @@ describe('Song Controller', () => {
 
     it('Shouldn\'t register a new song for the music public catalog if this was registered previously', async () => {
       const song: types.ISong = <types.ISong>{
-        title: 'Sweet Child O\' MINE',
+        title: 'Sweet Child O\' Mine',
         album: 'Appetite for Destruction',
         duration: '5:56',
         author: 'Guns N\' Roses'
@@ -270,7 +270,7 @@ describe('Song Controller', () => {
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(422);
-      const msg = utils.meesages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'public').replace('SONG_NAME', song.title);
+      const msg = utils.messages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'public').replace('SONG_NAME', song.title);
 
       expect(json.mock.lastCall[0].msg).toEqual(msg);
       expect(userAfterInsert.songs?.length).toEqual(1);
@@ -279,21 +279,65 @@ describe('Song Controller', () => {
 
   describe('Update user\'s song', () => {
     it('Should update a new song for the user\'s music private catalog', async () => {
+      const song: types.ISong = <types.ISong>{
+        title: 'Sweet Child O\' Mine',
+        album: 'Appetite for Destruction',
+        duration: '5:56',
+        author: 'Guns N\' Roses'
+      };
+
+      await addSong(mongoPrivateUser, song);
+
+      let userAfterInsert: types.IUser = <types.IUser> await User.findOne({email: mongoPrivateUser.email});
+      let savedSong :any = userAfterInsert?.songs;
+
       mockRequest = {
-        user
+        user: mongoPrivateUser,
+        body: {
+          _id: savedSong[0]._id.toString(),
+          title: 'Sweet Child O\' Mine 1',
+          album: 'Appetite for Destruction 1',
+          duration: '5:58',
+          author: 'Guns N\' Roses 1',
+        },
+        params: {
+
+        }
       }
 
       await songController.update(mockRequest as Request, mockResponse as Response);
       const status : any = mockResponse.status;
-      const json : any = mockResponse.json
+      const json : any = mockResponse.json;
+      const req : Request = mockRequest as Request;
+      userAfterInsert = <types.IUser> await User.findOne({email: mongoPrivateUser.email});
+      savedSong = userAfterInsert?.songs;
 
       expect(status).toBeCalledTimes(1);
       expect(status.mock.lastCall[0]).toEqual(200);
+
+      const msg = utils.messages.MSG_SONG_UPDATE_SUCCEED.replace('$SONG_NAME', req.body.title);
+      expect(json.mock.lastCall[0].msg).toEqual(msg);
+      expect({
+        _id: savedSong[0]._id.toString(),
+        title: savedSong[0].title,
+        album: savedSong[0].album,
+        duration: savedSong[0].duration,
+        author: savedSong[0].author,
+      }).toEqual(req.body);
     })
 
-    it('Shouldn\'t update a song for the music public catalog', async () => {
+    it('Shouldn\'t update a song because the _id wasn\'t sent on the request', async () => {
       mockRequest = {
-        user
+        user: mongoPrivateUser,
+        body: {
+          title: 'Sweet Child O\' Mine 1',
+          album: 'Appetite for Destruction 1',
+          duration: '5:58',
+          author: 'Guns N\' Roses 1',
+        },
+        params: {
+
+        }
       }
 
       await songController.update(mockRequest as Request, mockResponse as Response);
@@ -301,12 +345,24 @@ describe('Song Controller', () => {
       const json : any = mockResponse.json
 
       expect(status).toBeCalledTimes(1);
-      expect(status.mock.lastCall[0]).toEqual(200);
+      expect(status.mock.lastCall[0]).toEqual(404);
+      const msg = utils.messages.MSG_SONG_UPDATE_MISSED_ID;
+      expect(json.mock.lastCall[0].msg).toEqual(msg);
     })
 
-    it('Shouldn\'t update a song if this belongs to abithe user', async () => {
+    it('Shouldn\'t update a song because the _id isn\'t equal to any song registered', async () => {
       mockRequest = {
-        user
+        user: mongoPrivateUser,
+        body: {
+          _id: "1",
+          title: 'Sweet Child O\' Mine 1',
+          album: 'Appetite for Destruction 1',
+          duration: '5:58',
+          author: 'Guns N\' Roses 1',
+        },
+        params: {
+
+        }
       }
 
       await songController.update(mockRequest as Request, mockResponse as Response);
@@ -314,7 +370,80 @@ describe('Song Controller', () => {
       const json : any = mockResponse.json
 
       expect(status).toBeCalledTimes(1);
-      expect(status.mock.lastCall[0]).toEqual(200);
+      expect(status.mock.lastCall[0]).toEqual(404);
+      const msg = utils.messages.MSG_SONG_UPDATE_MISSED_SONG;
+      expect(json.mock.lastCall[0].msg).toEqual(msg);
+    })
+
+    it('Shouldn\'t update a song because the _id only was sent on the request', async () => {
+      const song: types.ISong = <types.ISong>{
+        title: 'Sweet Child O\' Mine',
+        album: 'Appetite for Destruction',
+        duration: '5:56',
+        author: 'Guns N\' Roses'
+      };
+
+      await addSong(mongoPrivateUser, song);
+
+      let userAfterInsert: types.IUser = <types.IUser> await User.findOne({email: mongoPrivateUser.email});
+      let savedSong :any = userAfterInsert?.songs;
+
+      mockRequest = {
+        user: mongoPrivateUser,
+        body: {
+          _id: savedSong[0]._id.toString()
+        },
+        params: {
+
+        }
+      }
+
+      await songController.update(mockRequest as Request, mockResponse as Response);
+      const status : any = mockResponse.status;
+      const json : any = mockResponse.json
+
+      expect(status).toBeCalledTimes(1);
+      expect(status.mock.lastCall[0]).toEqual(422);
+      const msg = utils.messages.MSG_SONG_UPDATE_MISSED_ALL_PARAMETERS;
+      expect(json.mock.lastCall[0].msg).toEqual(msg);
+    })
+
+    it('Shouldn\'t update a song if this belongs to another user', async () => {
+      const song: types.ISong = <types.ISong>{
+        title: 'Sweet Child O\' Mine',
+        album: 'Appetite for Destruction',
+        duration: '5:56',
+        author: 'Guns N\' Roses'
+      };
+
+      await addSong(mongoPublicUser, song);
+
+      let userAfterInsert: types.IUser = <types.IUser> await User.findOne({email: mongoPublicUser.email});
+      let savedSong :any = userAfterInsert?.songs;
+
+      mockRequest = {
+        user: mongoPrivateUser,
+        body: {
+          _id: savedSong[0]._id.toString(),
+          title: 'Sweet Child O\' Mine 1',
+          album: 'Appetite for Destruction 1',
+          duration: '5:58',
+          author: 'Guns N\' Roses 1',
+        },
+        params: {
+
+        }
+      }
+
+      await songController.update(mockRequest as Request, mockResponse as Response);
+      const status : any = mockResponse.status;
+      const json : any = mockResponse.json
+
+      expect(status).toBeCalledTimes(1);
+      expect(status.mock.lastCall[0]).toEqual(404);
+
+      const msg = utils.messages.MSG_SONG_UPDATE_MISSED_SONG;
+      expect(json.mock.lastCall[0].msg).toEqual(msg);
     })
   })
 });
