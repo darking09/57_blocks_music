@@ -156,7 +156,7 @@ describe('Song Controller', () => {
   })
 
   describe('Create user\'s song', () => {
-    /*it('Should register a new song for the user\'s music private catalog', async () => {
+    it('Should register a new song for the user\'s music private catalog', async () => {
       mockRequest = {
         user,
         body: {
@@ -206,7 +206,7 @@ describe('Song Controller', () => {
       expect(status.mock.lastCall[0]).toEqual(200);
       expect(json.mock.lastCall[0].msg).toEqual(utils.messages.MSG_SONG_REGISTER_SUCCEED.replace('$TYPE', 'public'));
       expect(userAfterInsert.songs?.length).toEqual(1);
-    })*/
+    })
 
     it('Shouldn\'t register a new song for the user\'s music catalog if this was registered previously', async () => {
       const song: types.ISong = <types.ISong>{
