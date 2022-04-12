@@ -1,8 +1,9 @@
 //Dependecies
-import { Request } from "express";
+import * as userRepository from '../repositories/userRepository';
+import { Request, Response, NextFunction } from "express";
 import config from "../config/config";
 import {IUser} from "../models/types";
-import User from "../models/user";
+import * as utils from '../utils';
 import jwt from "jsonwebtoken";
 
 interface IUserByType {
@@ -20,7 +21,7 @@ const createToken = (user: IUser) => {
   );
 };
 
-const chooseUserByTipe = async (req: Request, publicUser: string): Promise<IUserByType> => {
+const chooseUserByType = async (req: Request, publicUser: string): Promise<IUserByType> => {
   let user: IUser;
   let type: string;
   let isPrivate: boolean;
@@ -33,10 +34,10 @@ const chooseUserByTipe = async (req: Request, publicUser: string): Promise<IUser
 
   if (isPrivate) {
     const userAuth : IUser = <IUser>req.user;
-    user = <IUser>await User.findOne({ email: userAuth.email });
+    user = <IUser>await userRepository.getOneByParameter(userAuth);
     type = 'private';
   } else {
-    user = <IUser> await User.findOne({ email: publicUser });
+    user = <IUser> await userRepository.getOneByParameter({ email: publicUser });
     type = 'public';
   }
 
@@ -46,7 +47,31 @@ const chooseUserByTipe = async (req: Request, publicUser: string): Promise<IUser
   };
 };
 
+const validateParameters = (req: Request, res: Response, next: NextFunction ) => {
+  if (!req.body.email || !req.body.password) {
+    return res.status(400).json({
+      msg: utils.messages.MSG_EMPTY_REQUEST
+    });
+  }
+
+  if (!utils.regularExpressions.validateEmail(req.body.email)) {
+    return res.status(400).json({
+      msg: utils.messages.MSG_EMAIL_FORMAT
+    });
+  }
+
+  if (!utils.regularExpressions.validatePassword(req.body.password)) {
+    return res.status(400).json({
+      msg: utils.messages.MSG_PASSWORD_FORMAT
+    });
+  }
+
+  next();
+};
+
+
 export default {
   createToken,
-  chooseUserByTipe
+  chooseUserByType,
+  validateParameters
 };

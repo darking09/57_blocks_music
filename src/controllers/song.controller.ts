@@ -9,7 +9,7 @@ export const PUBLIC_USER = 'user@public.com';
 
 export const index = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const {user, type} = await utils.auth.chooseUserByTipe(req, PUBLIC_USER);
+    const {user, type} = await utils.auth.chooseUserByType(req, PUBLIC_USER);
 
     const maxSizeSongList = await User.aggregate([
       {
@@ -55,7 +55,7 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
 
 export const create = async(req: Request, res: Response): Promise<Response> => {
   try{
-    const {user, type} = await utils.auth.chooseUserByTipe(req, PUBLIC_USER);
+    const {user, type} = await utils.auth.chooseUserByType(req, PUBLIC_USER);
 
     const newSong : ISong = <ISong>{
       title: sanitize(req.body.title),

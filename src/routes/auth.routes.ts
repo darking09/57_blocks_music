@@ -1,6 +1,6 @@
 // Dependencies
 import { Router } from "express";
-import { signIn, signUp } from "../controllers/user.controller";
+import { signUp, signIn } from "../userCases/userController";
 const router = Router();
 
 router.post('/signup', signUp);
