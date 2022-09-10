@@ -44,7 +44,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongo-sanitize": "^1.1.0",
     "mongodb-memory-server": "^8.4.2",
-    "mongoose": "^6.2.9",
+    "mongoose": "^6.4.6",
     "morgan": "^1.10.0",
     "passport": "^0.5.2",
     "passport-jwt": "^4.0.0",
